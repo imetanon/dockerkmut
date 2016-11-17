@@ -1,6 +1,35 @@
 # docker@kmutnb
 ## Nov 17, 2016
 
+## Docker Technology on Linux kernel
+1. base Technology Stack on linux
+
+![docker kernel](https://www.ociweb.com/files/1814/3050/6411/Dockertechstack.png)
+
+2. Docker's Architecture
+![architecture](https://docs.docker.com/engine/article-img/architecture.svg)
+* The Docker daemon
+  The Docker daemon runs on a host machine. The user uses the Docker client to interact with the daemon.
+
+* The Docker client
+  The Docker client, in the form of the docker binary, is the primary user interface to Docker. It accepts commands and configuration flags from the user and communicates with a Docker daemon. One client can even communicate with multiple unrelated daemons.
+
+## Underline Technology
+Docker is written in Go and takes advantage of several features of the Linux kernel to deliver its functionality.
+
+1. Namespace
+  * The ``pid`` namespace: Process isolation (PID: Process ID).
+  * The ``net`` namespace: Managing network interfaces (NET: Networking).
+  * The ``ipc`` namespace: Managing access to IPC resources (IPC: InterProcess Communication).
+  * The ``mnt`` namespace: Managing filesystem mount points (MNT: Mount).
+  * The ``uts`` namespace: Isolating kernel and version identifiers. (UTS: Unix Timesharing System).
+
+2. Control groups
+Docker Engine on Linux also relies on another technology called control groups (cgroups). A cgroup limits an application to a specific set of resources
+
+3. Union File System
+Union file systems, or UnionFS, are file systems that operate by creating layers, making them very lightweight and fast. Docker Engine uses UnionFS to provide the building blocks for containers. Docker Engine can use multiple UnionFS variants, including AUFS, btrfs, vfs, and DeviceMapper.
+
 ## Docker OS
 
 ![docker os](https://i2.wp.com/www.inovex.de/blog/wp-content/uploads/2015/05/docker-os-vergleich.jpg)
@@ -22,7 +51,7 @@ vagrant ssh
 
 ```
 ## Docker in Action
-
+### Python
 ```
 $ sudo docker run -ti python bash
 Unable to find image 'python:latest' locally
@@ -51,7 +80,23 @@ object?   -> Details about 'object', use 'object??' for extra details.
 
 In [1]: 
 ```
-### 
+### Ubuntu 
+```
+$ sudo docker run -i -t ubuntu /bin/bash
+
+Unable to find image 'ubuntu:latest' locally
+Trying to pull repository docker.io/library/ubuntu ... 
+latest: Pulling from docker.io/library/ubuntu
+aed15891ba52: Pull complete 
+773ae8583d14: Pull complete 
+d1d48771f782: Pull complete 
+cd3d6cd6c0cf: Pull complete 
+8ff6f8a9120c: Pull complete 
+Digest: sha256:35bc48a1ca97c3971611dc4662d08d131869daa692acb281c7e9e052924e38b1
+Status: Downloaded newer image for docker.io/ubuntu:latest
+
+root@3fd3ea4bdfa8:/#
+```
 
 ## Create Docker Volume
 
