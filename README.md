@@ -304,7 +304,7 @@ ENTRYPOINT ["python"]
 CMD ["app.py"]
 ```
 
-#### create hello.py Flask application
+#### create app.py Flask application
 ```
 From flask import Flask
 app = Flask(__name__)
@@ -316,15 +316,82 @@ def hello_world():
 if __name__ == '__main__':
     app.run(debug=True,host='0.0.0.0')
 ```
+
+#### requirements.txt
+```
+Flask==0.10.1
+```
+#### File structure
+```
+app.py  
+Dockerfile  
+requirements.txt
+```
 ### build it
 ```
-$ sudo docker build -t flask-sample-one:latest .
+sudo docker build -t flask-sample-one:latest .
 ```
 
 ###Run
 ```
-docker run -d -p 5000:5000 flask-sample-one
+sudo docker run -d -p 5000:5000 flask-sample-one
 ```
 
+## Dockerfile: ENTRYPOINT vs CMD
+```
+mkdir project3
+cd project3
+vi Dockerfile
+```
+####verion run with shell()
+```
+FROM ubuntu:trusty
+CMD ping localhost
+```
+####version run with exec()
+```
+FROM ubuntu:trusty
+CMD ["/bin/ping","localhost"]
+```
 
+###Build
+```
+sudo docker built --tag demo
+sudo docker run -t demo
 
+```
+
+###Run in Background
+```
+sudo docker run -d demo
+d589b67307ee225c26128172f461682cb268a178e7591eb8f0a31d3c4cf10d7e
+
+sudo docker ps -l
+CONTAINER ID        IMAGE               COMMAND                  CREATED             STATUS              PORTS               NAMES
+d589b67307ee        demo                "/bin/sh -c 'ping loc"   44 seconds ago      Up 43 seconds                           backstabbing_noyce
+
+```
+###monitor process
+```
+$ sudo docker exec d589b67307ee ps -f 
+UID        PID  PPID  C STIME TTY          TIME CMD
+root         1     0  0 09:13 ?        00:00:00 /bin/sh -c ping localhost
+root         6     1  0 09:13 ?        00:00:00 ping localhost
+root         7     0  0 09:14 ?        00:00:00 ps -f
+```
+
+### Overide CMD
+You can see that the ping executable was run automatically when the container was started. However, we can override the default CMD by specifying an argument after the image name when starting the container:
+
+```
+sudo docker run demo hostname
+cad0ed169351
+```
+
+###Both Entrypoint and CMD
+
+```
+FROM ubuntu:trusty
+ENTRYPOINT ["/bin/ping","-c","3"]
+CMD ["localhost"]
+```
