@@ -14,7 +14,12 @@
 * The Docker client
   The Docker client, in the form of the docker binary, is the primary user interface to Docker. It accepts commands and configuration flags from the user and communicates with a Docker daemon. One client can even communicate with multiple unrelated daemons.
 
+## Docker vs Virtual machine
+![docker](http://blog.jayway.com/wp-content/uploads/2015/03/vm-vs-docker.png)
+The image describes the difference between a VM and Docker. Instead of a hypervisor with Guest OSes on top, Docker uses a Docker engine and containers on top. Does this really tell us anything? What is the difference between a "hypervisor" and the "Docker engine"? A nice way of illustrating this difference is through listing the running processes on the Host.
+
 ## Underline Technology
+![enjoy](https://docs.docker.com/opensource/images/docker-friends.png)
 Docker is written in Go and takes advantage of several features of the Linux kernel to deliver its functionality.
 
 1. Namespace
@@ -38,7 +43,45 @@ Union file systems, or UnionFS, are file systems that operate by creating layers
 3. Ubuntu Snappy
 4. RancherOS
 5. Photon
+## Install Docker Engine
+1. [on mac](https://docs.docker.com/docker-for-mac/)
+2. [on window](https://docs.docker.com/docker-for-windows/)
+3. [ubuntu](https://docs.docker.com/engine/installation/linux/ubuntulinux/)
+4. [fedora](https://docs.docker.com/engine/installation/linux/fedora/)
+5. [Debian](https://docs.docker.com/engine/installation/linux/debian/) 
 
+## Install Fedora 24
+### install docker with script
+```
+curl -fsSL https://get.docker.com/ | sh
+sudo systemctl enable docker.service
+sudo systemctl start docker
+```
+### install docker machine
+```
+$ curl -L https://github.com/docker/machine/releases/download/v0.8.2/docker-machine-`uname -s`-`uname -m` >/usr/local/bin/docker-machine && \
+chmod +x /usr/local/bin/docker-machine
+```
+### Install docker machine kvm
+```
+curl -L https://github.com/dhiltgen/docker-machine-kvm/releases/download/v0.7.0/docker-machine-driver-kvm > /usr/local/bin/docker-machine-driver-kvm && \
+  chmod +x /usr/local/bin/docker-machine-driver-kvm
+```
+### Copy key from docker machine to docker client
+```
+cd /home/admin/.docker/machine/certs/
+ls
+ca-key.pem  ca.pem  cert.pem  key.pem
+sudo cp * /etc/docker/
+sudo chmod 644 /etc/docker/*
+```
+### Docker machine command
+```
+docker-machine create development -d kvm --kvm-cpu-count 2 --kvm-disk-size 40000
+docker-machine env development
+eval "$(docker-machine env development)"
+docker-machine ssh
+```
 ## Install CentOS Atomic
 
 ```
@@ -97,9 +140,19 @@ Status: Downloaded newer image for docker.io/ubuntu:latest
 
 root@3fd3ea4bdfa8:/#
 ```
-
+### Debian
+```
+$ sudo docker run -i -t debian:jessie bash
+Unable to find image 'debian:jessie' locally
+Trying to pull repository docker.io/library/debian ... 
+jessie: Pulling from docker.io/library/debian
+386a066cd84a: Already exists 
+Digest: sha256:c1ce85a0f7126a3b5cbf7c57676b01b37c755b9ff9e2f39ca88181c02b985724
+Status: Downloaded newer image for docker.io/debian:jessie
+root@6766f2ea6fa2:/#
+```
 ## Create Docker Volume
-
+![volume](https://clusterhq.com/assets/images/simple-flocker-animation.gif)
 ```
 $ sudo docker volume create --name pgdata
 pgdata
@@ -158,9 +211,71 @@ $ sudo docker inspect pgdb
         ],
 ...
 ``` 
+## Create Own Image
 
+1. pull base image
+2. Install package
+3. commit docker to create image
 
+### Add http to base centos
+```
+$ sudo docker pull centos
+$ sudo docker images
+REPOSITORY           TAG                 IMAGE ID            CREATED             SIZE
+docker.io/centos     latest              0584b3d2cf6d        2 weeks ago         196.5 MB
 
+$ sudo docker run -it docker.io/centos /bin/bash
+[root@d65459027741 /]#
+
+[root@d65459027741 /]# yum install httpd
+[root@d65459027741 /]# exit
+
+$ sudo docker ps --all
+CONTAINER ID        IMAGE               COMMAND                  CREATED              STATUS                      PORTS               NAMES
+d65459027741        docker.io/centos    "/bin/bash"              About a minute ago   Exited (0) 11 seconds ago                       jolly_joliot
+
+$ sudo docker commit -m "Add http to base Centos" -a "sawangpong M." d65459027741 itbakery/centos7_http:v0.1
+sha256:734a14f07b6084c144273b1d93104a0eac182d092b872928743c5731c77b3f8f
+
+$ sudo docker images
+REPOSITORY              TAG                 IMAGE ID            CREATED             SIZE
+itbakery/centos7_http   v0.1                734a14f07b60        32 seconds ago      338.3 MB
+
+```
+
+####  Create container from image
+create container from image 'itbakery/centos7_http'
+```
+sudo docker run -ti itbakery/centos7_http:v0.1
+[root@df35d54b6b78 /]# 
+```
+
+### Create Image Debian
+```
+sudo docker run -i -t debian:jessie bash
+root@bffb8fb432de:/# apt-get update
+root@bffb8fb432de:/# apt-get install postgresql
+
+sudo docker commit bffb8fb432de debian_postgresql
+sha256:59680951223ecbbf3002efd2875400827f40cf87b308c70dd90d7d3d72d9102e
+
+```
+
+## Create Image from Dockerfile
+1. create newfolder name project
+2. Create ``Dockerfile`` in project
+
+```
+FROM debian:jessie
+# Dockerfile for postgres-iojs
+
+RUN apt-get update
+RUN apt-get install -y postgresql
+```
+3. build image from Dockerfile
+```
+sudo docker build --tag postgres-debian .
+```
 
 
 
