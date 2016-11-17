@@ -292,57 +292,38 @@ vi Dockerfile
 ```
 
 ```
-#
-# Super simple example of a Dockerfile
-#
 FROM ubuntu:latest
-MAINTAINER Andrew Odewahn "odewahn@oreilly.com"
-
-RUN apt-get update
-RUN apt-get install -y python python-pip wget
-RUN pip install Flask
-
-ADD hello.py /home/hello.py
-
-WORKDIR /home
+MAINTAINER Rajdeep Dua "dua_rajdeep@yahoo.com"
+RUN apt-get update -y
+RUN apt-get install -y python-pip python-dev build-essential
+COPY . /app
+WORKDIR /app
+RUN pip install -r requirements.txt
+#run python app.py
+ENTRYPOINT ["python"]
+CMD ["app.py"]
 ```
 
-#### create hello.py
+#### create hello.py Flask application
 ```
-from flask import Flask
+From flask import Flask
 app = Flask(__name__)
 
 @app.route('/')
 def hello_world():
-    return 'Hello, World!'
+    return 'Flask Dockerized'
+
+if __name__ == '__main__':
+    app.run(debug=True,host='0.0.0.0')
 ```
 ### build it
 ```
-sudo docker build -t "simple_flask:dockerfile" .
-Removing intermediate container 7d37ae81c2f2
-Successfully built e72810cc2c84
-```
-
-```
-sudo docker history simple_flask:dockerfile
-IMAGE               CREATED             CREATED BY                                      SIZE                COMMENT
-e72810cc2c84        29 seconds ago      /bin/sh -c #(nop) WORKDIR /home                 0 B                 
-67b7df919f1c        31 seconds ago      /bin/sh -c #(nop) ADD file:cac026763afe0e9d8a   109 B               
-1a56bf381359        3 minutes ago       /bin/sh -c pip install Flask                    5.321 MB            
-2b9e3294172b        3 minutes ago       /bin/sh -c apt-get install -y python python-p   267.7 MB            
-43f463ffcab4        5 minutes ago       /bin/sh -c apt-get update                       39.27 MB            
-2a7a02305271        5 minutes ago       /bin/sh -c #(nop) MAINTAINER Andrew Odewahn "   0 B                 
-e4415b714b62        11 hours ago        /bin/sh -c #(nop)  CMD ["/bin/bash"]            0 B                 
-<missing>           11 hours ago        /bin/sh -c mkdir -p /run/systemd && echo 'doc   7 B                 
-<missing>           11 hours ago        /bin/sh -c sed -i 's/^#\s*\(deb.*universe\)$/   1.895 kB            
-<missing>           11 hours ago        /bin/sh -c rm -rf /var/lib/apt/lists/*          0 B                 
-<missing>           11 hours ago        /bin/sh -c set -xe   && echo '#!/bin/sh' > /u   745 B               
-<missing>           11 hours ago        /bin/sh -c #(nop) ADD file:abc033900893f6c737   128.1 MB  
+$ sudo docker build -t flask-sample-one:latest .
 ```
 
 ###Run
 ```
-sudo docker run -p 5000:5000 simple_flask:dockerfile python hello.py
+docker run -d -p 5000:5000 flask-sample-one
 ```
 
 
